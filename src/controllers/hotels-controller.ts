@@ -19,3 +19,15 @@ export async function getAllHotels(req: AuthenticatedRequest, res: Response) {
     return res.sendStatus(httpStatus.BAD_REQUEST);
   }
 }
+
+export async function getHotelById(req: AuthenticatedRequest, res: Response) {
+  try {
+    const { userId } = req;
+    const { hotelId } = req.params;
+
+    const hotel = await hotelsService.getHotelById(Number(hotelId), Number(userId));
+    return res.status(httpStatus.OK).send(hotel);
+  } catch (error) {
+    return res.sendStatus(httpStatus.NOT_FOUND);
+  }
+}

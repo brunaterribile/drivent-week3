@@ -19,11 +19,21 @@ async function getHotels(userId: number) {
   await verifyTicketAndEnrollment(userId);
 
   const hotels = await hotelsRepository.getAllHotels();
+  if (!hotels) throw notFoundError();
   return hotels;
+}
+
+async function getHotelById(userId: number, hotelId: number) {
+  await verifyTicketAndEnrollment(userId);
+
+  const hotel = await hotelsRepository.getHotelById(hotelId);
+  if (!hotel) throw notFoundError();
+  return hotel;
 }
 
 const hotelsService = {
   getHotels,
+  getHotelById,
 };
 
 export default hotelsService;
