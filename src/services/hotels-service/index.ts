@@ -2,6 +2,7 @@ import { TicketStatus } from '@prisma/client';
 import { notFoundError, paymentRequiredError } from '@/errors';
 import enrollmentRepository from '@/repositories/enrollment-repository';
 import ticketsRepository from '@/repositories/tickets-repository';
+import hotelsRepository from '@/repositories/hotels-repository';
 
 async function verifyTicketAndEnrollment(userId: number) {
   const enrollment = await enrollmentRepository.findWithAddressByUserId(userId);
