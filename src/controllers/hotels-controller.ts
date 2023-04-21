@@ -10,12 +10,9 @@ export async function getAllHotels(req: AuthenticatedRequest, res: Response) {
 
     return res.status(httpStatus.OK).send(hotels);
   } catch (error) {
-    if (error.name === 'NotFoundError') {
-      return res.sendStatus(httpStatus.NOT_FOUND);
-    }
-    if (error.name === 'PaymentRequired') {
-      return res.sendStatus(httpStatus.PAYMENT_REQUIRED);
-    }
+    if (error.name === 'NotFoundError') return res.sendStatus(httpStatus.NOT_FOUND);
+    if (error.name === 'PaymentRequired') return res.sendStatus(httpStatus.PAYMENT_REQUIRED);
+
     return res.sendStatus(httpStatus.BAD_REQUEST);
   }
 }
@@ -28,6 +25,9 @@ export async function getHotelById(req: AuthenticatedRequest, res: Response) {
     const hotel = await hotelsService.getHotelById(Number(hotelId), Number(userId));
     return res.status(httpStatus.OK).send(hotel);
   } catch (error) {
-    return res.sendStatus(httpStatus.NOT_FOUND);
+    if (error.name === 'NotFoundError') return res.sendStatus(httpStatus.NOT_FOUND);
+    if (error.name === 'PaymentRequired') return res.sendStatus(httpStatus.PAYMENT_REQUIRED);
+
+    return res.sendStatus(httpStatus.BAD_REQUEST);
   }
 }
