@@ -19,7 +19,7 @@ async function getHotels(userId: number) {
   await verifyTicketAndEnrollment(userId);
 
   const hotels = await hotelsRepository.getAllHotels();
-  if (!hotels) throw notFoundError();
+  if (!hotels || hotels.length == 0) throw notFoundError();
   return hotels;
 }
 
