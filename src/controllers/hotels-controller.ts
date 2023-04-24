@@ -22,7 +22,7 @@ export async function getHotelById(req: AuthenticatedRequest, res: Response) {
     const { userId } = req;
     const { hotelId } = req.params;
 
-    const hotel = await hotelsService.getHotelById(Number(hotelId), Number(userId));
+    const hotel = await hotelsService.getHotelById(Number(userId), Number(hotelId));
     return res.status(httpStatus.OK).send(hotel);
   } catch (error) {
     if (error.name === 'NotFoundError') return res.sendStatus(httpStatus.NOT_FOUND);

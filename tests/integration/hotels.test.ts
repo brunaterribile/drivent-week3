@@ -6,6 +6,7 @@ import {
   createEnrollmentWithAddress,
   createHotel,
   createPayment,
+  createRooms,
   createTicket,
   createTicketType,
   createUser,
@@ -223,6 +224,54 @@ describe('GET /hotels/:hotelId', () => {
       const response = await server.get('/hotels/1').set('Authorization', `Bearer ${token}`);
 
       expect(response.status).toEqual(httpStatus.PAYMENT_REQUIRED);
+    });
+  });
+
+  describe('when token, ticket and enrollment is valid', () => {
+    it('should respond with status 404 for invalid hotel id', async () => {
+      const user = await createUser();
+      const token = await generateValidToken(user);
+      const enroll = await createEnrollmentWithAddress(user);
+      const ticketType = await createTicketType(false, true);
+      const ticket = await createTicket(enroll.id, ticketType.id, 'PAID');
+      await createPayment(ticket.id, ticketType.price);
+      await createHotel();
+
+      const response = await server.get('/hotel/100').set('Authorization', `Bearer ${token}`);
+
+      expect(response.status).toEqual(httpStatus.NOT_FOUND);
+    });
+
+    it('should respond with status 200 and hotel data', async () => {
+      const user = await createUser();
+      const token = await generateValidToken(user);
+      const enroll = await createEnrollmentWithAddress(user);
+      const ticketType = await createTicketType(false, true);
+      const ticket = await createTicket(enroll.id, ticketType.id, 'PAID');
+      await createPayment(ticket.id, ticketType.price);
+      const hotel = await createHotel();
+      const room = await createRooms(hotel.id);
+
+      const response = await server.get(`/hotels/1`).set('Authorization', `Bearer ${token}`);
+
+      expect(response.status).toEqual(httpStatus.OK);
+      expect(response.body).toEqual({
+        id: hotel.id,
+        name: hotel.name,
+        image: hotel.image,
+        createdAt: hotel.createdAt.toISOString(),
+        updatedAt: hotel.updatedAt.toISOString(),
+        Rooms: expect.arrayContaining([
+          expect.objectContaining({
+            id: room.id,
+            name: room.name,
+            capacity: room.capacity,
+            hotelId: room.id,
+            createdAt: room.createdAt.toISOString(),
+            updatedAt: room.updatedAt.toISOString(),
+          }),
+        ]),
+      });
     });
   });
 });

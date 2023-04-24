@@ -27,7 +27,7 @@ async function getHotelById(userId: number, hotelId: number) {
   await verifyTicketAndEnrollment(userId);
 
   const hotel = await hotelsRepository.getHotelById(hotelId);
-  if (!hotel) throw notFoundError();
+  if (!hotel || hotel == undefined) throw notFoundError();
   return hotel;
 }
 
