@@ -97,7 +97,8 @@ describe('GET /hotels', () => {
       const token = await generateValidToken(user);
       const enroll = await createEnrollmentWithAddress(user);
       const ticketType = await createTicketType(false, false);
-      await createTicket(enroll.id, ticketType.id, 'PAID');
+      const ticket = await createTicket(enroll.id, ticketType.id, 'PAID');
+      await createPayment(ticket.id, ticketType.price);
 
       const response = await server.get('/hotels').set('Authorization', `Bearer ${token}`);
 
@@ -111,7 +112,8 @@ describe('GET /hotels', () => {
       const token = await generateValidToken(user);
       const enroll = await createEnrollmentWithAddress(user);
       const ticketType = await createTicketType(false, true);
-      await createTicket(enroll.id, ticketType.id, 'PAID');
+      const ticket = await createTicket(enroll.id, ticketType.id, 'PAID');
+      await createPayment(ticket.id, ticketType.price);
 
       const response = await server.get('/hotels').set('Authorization', `Bearer ${token}`);
 
@@ -252,7 +254,7 @@ describe('GET /hotels/:hotelId', () => {
       const hotel = await createHotel();
       const room = await createRooms(hotel.id);
 
-      const response = await server.get(`/hotels/1`).set('Authorization', `Bearer ${token}`);
+      const response = await server.get(`/hotels/${hotel.id}`).set('Authorization', `Bearer ${token}`);
 
       expect(response.status).toEqual(httpStatus.OK);
       expect(response.body).toEqual({
@@ -266,7 +268,7 @@ describe('GET /hotels/:hotelId', () => {
             id: room.id,
             name: room.name,
             capacity: room.capacity,
-            hotelId: room.id,
+            hotelId: hotel.id,
             createdAt: room.createdAt.toISOString(),
             updatedAt: room.updatedAt.toISOString(),
           }),
