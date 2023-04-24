@@ -2,8 +2,9 @@ import supertest from 'supertest';
 import httpStatus from 'http-status';
 import faker from '@faker-js/faker';
 import * as jwt from 'jsonwebtoken';
-import { createEnrollmentWithAddress, createTicket, createTicketType, createUser } from '../factories';
+import { createEnrollmentWithAddress, createPayment, createTicket, createTicketType, createUser } from '../factories';
 import { cleanDb, generateValidToken } from '../helpers';
+import { createHotel } from '../factories/hotels-factory';
 import app, { init } from '@/app';
 
 beforeAll(async () => {
@@ -94,6 +95,46 @@ describe('GET /hotels', () => {
       const response = await server.get('/hotels').set('Authorization', `Bearer ${token}`);
 
       expect(response.status).toEqual(httpStatus.PAYMENT_REQUIRED);
+    });
+  });
+
+  describe('when token, ticket and enrollment is valid', () => {
+    it('should respond with status 404 when there is no hotels', async () => {
+      const user = await createUser();
+      const token = await generateValidToken(user);
+      const enroll = await createEnrollmentWithAddress(user);
+      const ticketType = await createTicketType(false, true);
+      await createTicket(enroll.id, ticketType.id, 'PAID');
+
+      const response = await server.get('/hotels').set('Authorization', `Bearer ${token}`);
+
+      expect(response.status).toEqual(httpStatus.NOT_FOUND);
+    });
+
+    it('should respond with status 200 and with hotels list', async () => {
+      const user = await createUser();
+      const token = await generateValidToken(user);
+      const enroll = await createEnrollmentWithAddress(user);
+      const ticketType = await createTicketType(false, true);
+      const ticket = await createTicket(enroll.id, ticketType.id, 'PAID');
+      await createPayment(ticket.id, ticketType.price);
+      await createHotel();
+      await createHotel();
+
+      const response = await server.get('/hotels').set('Authorization', `Bearer ${token}`);
+
+      expect(response.status).toEqual(httpStatus.OK);
+      expect(response.body).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            id: expect.any(Number),
+            name: expect.any(String),
+            image: expect.any(String),
+            createdAt: expect.any(String),
+            updatedAt: expect.any(String),
+          }),
+        ]),
+      );
     });
   });
 });
